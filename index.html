@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>99 TESBİH: SEFÎNE-İ NÛR - 2.5D İZOMETRİK ASCII RPG</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+
+        :root {
+            --term-bg: #030804;
+            --term-green: #33ff66;
+            --term-green-dim: #1e824c;
+            --term-green-dark: #0d2813;
+            --term-amber: #ffaa00;
+            --term-red: #ff4444;
+            --term-blue: #44aaff;
+            --term-gold: #ffdd44;
+            --term-cyan: #33ddcc;
+            --term-white: #ffffff;
+            --term-border: #1a4d25;
+            --term-highlight-bg: #33ff66;
+            --term-highlight-fg: #030804;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            scrollbar-width: thin;
+            scrollbar-color: var(--term-green-dim) var(--term-bg);
+        }
+
+        /* Custom ASCII-like thin scrollbar */
+        *::-webkit-scrollbar {
+            width: 6px;
+        }
+        *::-webkit-scrollbar-track {
+            background: var(--term-bg);
+        }
+        *::-webkit-scrollbar-thumb {
+            background-color: var(--term-green-dim);
+        }
+
+        body {
+            background-color: #000200;
+            color: var(--term-green);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            margin: 0;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            letter-spacing: 0px;
+        }
+
+        /* CRT Screen Scanline & Phosphor Flicker */
+        #crt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Main ASCII Terminal Container */
+        #terminal-container {
+            width: 1280px;
+            max-width: 99vw;
+            height: 750px;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--term-bg);
+            border: 1px solid var(--term-border);
+            box-shadow: 0 0 20px rgba(51, 255, 102, 0.12), inset 0 0 40px rgba(0,0,0,0.85);
+            padding: 6px;
+            font-size: 13px;
+            line-height: 1.25;
+        }
+
+        /* Pure ASCII Header Bar */
+        #ascii-header {
+            white-space: pre;
+            color: var(--term-green);
+            margin-bottom: 2px;
+            font-weight: 600;
+            font-size: 12.5px;
+        }
+
+        .ascii-btn {
+            background: transparent;
+            border: none;
+            color: var(--term-green);
+            font-family: inherit;
+            font-size: inherit;
+            cursor: pointer;
+            padding: 0 2px;
+            text-decoration: none;
+            display: inline;
+        }
+        .ascii-btn:hover {
+            background-color: var(--term-highlight-bg);
+            color: var(--term-highlight-fg);
+            font-weight: 700;
+        }
+
+        /* Fullscreen Overlay (Splash, Logo, Menu) */
+        #fullscreen-overlay {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            white-space: pre;
+            line-height: 1.25;
+            background: var(--term-bg);
+            padding: 15px;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        /* Split Screen Gameplay */
+        #gameplay-view {
+            flex: 1;
+            display: none;
+            flex-direction: row;
+            gap: 6px;
+            overflow: hidden;
+            margin-top: 2px;
+            margin-bottom: 2px;
+        }
+
+        /* LEFT: 2.5D Isometric Room Area */
+        #left-room-panel {
+            flex: 58;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #020603;
+        }
+
+        #room-frame-top, #room-frame-mid, #room-frame-bottom {
+            white-space: pre;
+            color: var(--term-green);
+            font-weight: 600;
+        }
+
+        #room-viewport-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 1px solid var(--term-border);
+            border-right: 1px solid var(--term-border);
+            background: #010402;
+            overflow: hidden;
+            padding: 2px;
+        }
+
+        #room-viewport {
+            white-space: pre;
+            font-size: 13.5px;
+            line-height: 1.14;
+            color: #55ff77;
+            text-shadow: 0 0 3px rgba(51, 255, 102, 0.3);
+            font-weight: bold;
+        }
+
+        /* 2.5D ISOMETRIC COLOR STYLES */
+        .c-player        { color: #ffffff; text-shadow: 0 0 6px rgba(255, 255, 255, 0.8); }
+        .c-pir           { color: #76d7c4; text-shadow: 0 0 5px rgba(118, 215, 196, 0.6); }
+        .c-gold          { color: #f7dc6f; text-shadow: 0 0 5px rgba(247, 220, 111, 0.8); font-weight: bold; }
+        .c-flame-1       { color: #ff5722; text-shadow: 0 0 8px rgba(255, 87, 34, 0.9); font-weight: bold; }
+        .c-flame-2       { color: #ffc107; text-shadow: 0 0 8px rgba(255, 193, 7, 0.9); font-weight: bold; }
+        .c-smoke         { color: #6e8b74; font-weight: normal; }
+        .c-torch-glow    { color: #446633; background: rgba(255, 150, 0, 0.08); }
+        .c-stone-wall    { color: #2e7d32; font-weight: bold; }
+        .c-stone-fill    { color: #1b4d24; }
+        .c-stone-cap     { color: #66bb6a; font-weight: bold; }
+        .c-floor         { color: #1a4220; }
+        .c-floor-edge    { color: #2d6635; }
+        .c-carpet-border { color: #d35400; font-weight: bold; }
+        .c-carpet-inner  { color: #c0392b; }
+        .c-desk          { color: #d4ac0d; text-shadow: 0 0 4px rgba(212, 172, 13, 0.5); }
+        .c-chest         { color: #e59866; text-shadow: 0 0 4px rgba(229, 152, 102, 0.5); }
+        .c-door          { color: #48c9b0; text-shadow: 0 0 6px rgba(72, 201, 176, 0.8); }
+        .c-shadow        { color: #0a1f0d; font-weight: bold; }
+        .c-ambient       { color: #3a6644; }
+
+        #room-controls-box {
+            border-left: 1px solid var(--term-border);
+            border-right: 1px solid var(--term-border);
+            padding: 4px 8px;
+            font-size: 11px;
+            line-height: 1.35;
+            background: #020703;
+            color: #77dd99;
+        }
+
+        /* RIGHT: Disco Elysium Dialogue Panel */
+        #right-dialogue-panel {
+            flex: 42;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #020603;
+        }
+
+        /* Portrait Frame */
+        #portrait-frame-top, #portrait-frame-bottom {
+            white-space: pre;
+            color: var(--term-green);
+            font-weight: 600;
+        }
+
+        #portrait-box {
+            border-left: 1px solid var(--term-border);
+            border-right: 1px solid var(--term-border);
+            padding: 6px 10px;
+            white-space: pre;
+            font-size: 11px;
+            line-height: 1.18;
+            color: var(--term-gold);
+            background: #030a04;
+            min-height: 110px;
+            max-height: 125px;
+            overflow: hidden;
+        }
+
+        /* Dialogue Log Frame */
+        #dialogue-frame-top, #dialogue-frame-bottom {
+            white-space: pre;
+            color: var(--term-green);
+            font-weight: 600;
+        }
+
+        #dialogue-history {
+            flex: 1;
+            border-left: 1px solid var(--term-border);
+            border-right: 1px solid var(--term-border);
+            padding: 8px 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #010502;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .dialogue-node {
+            padding-left: 6px;
+            border-left: 2px solid var(--term-green-dim);
+            animation: fadeIn 0.15s ease-in;
+        }
+
+        .node-speaker {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        .voice-nefs { border-left-color: var(--term-red); color: #ff8888; }
+        .voice-nefs .node-speaker { color: var(--term-red); }
+
+        .voice-akil { border-left-color: var(--term-blue); color: #99ccff; }
+        .voice-akil .node-speaker { color: var(--term-blue); }
+
+        .voice-kalp { border-left-color: var(--term-green); color: #aaffaa; }
+        .voice-kalp .node-speaker { color: var(--term-green); }
+
+        .voice-ruh { border-left-color: var(--term-gold); color: #ffee88; }
+        .voice-ruh .node-speaker { color: var(--term-gold); }
+
+        .voice-dervis { border-left-color: var(--term-cyan); color: #aafff0; }
+        .voice-dervis .node-speaker { color: var(--term-cyan); }
+
+        .voice-salik { border-left-color: #ffffff; color: #f0fff0; }
+        .voice-salik .node-speaker { color: var(--term-ffffff); }
+
+        .voice-system { border-left-color: #888888; color: #cccccc; }
+        .voice-system .node-speaker { color: #aaaaaa; }
+
+        /* Choices Frame */
+        #choices-frame-top, #choices-frame-bottom {
+            white-space: pre;
+            color: var(--term-green);
+            font-weight: 600;
+        }
+
+        #choices-container {
+            border-left: 1px solid var(--term-border);
+            border-right: 1px solid var(--term-border);
+            padding: 6px 8px;
+            background: #020803;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .ascii-choice {
+            background: transparent;
+            border: none;
+            color: #d0ffd0;
+            font-family: inherit;
+            font-size: 12px;
+            line-height: 1.35;
+            text-align: left;
+            cursor: pointer;
+            padding: 3px 6px;
+            display: block;
+            width: 100%;
+            transition: none;
+        }
+        .ascii-choice:hover, .ascii-choice:focus {
+            background-color: var(--term-highlight-bg);
+            color: var(--term-highlight-fg);
+            outline: none;
+            font-weight: bold;
+        }
+
+        /* Bottom Status & Beads Bar */
+        #ascii-footer {
+            white-space: pre;
+            color: var(--term-green);
+            font-weight: 600;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* Menu Select Buttons */
+        .ascii-menu-item {
+            display: block;
+            margin: 6px 0;
+            color: var(--term-green);
+            cursor: pointer;
+            padding: 4px 12px;
+            font-size: 14px;
+            border: 1px dashed var(--term-border);
+            width: 380px;
+            text-align: left;
+        }
+        .ascii-menu-item:hover {
+            background-color: var(--term-highlight-bg);
+            color: var(--term-highlight-fg);
+            border-style: solid;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="crt-overlay"></div>
+
+    <div id="terminal-container">
+        <!-- TOP ASCII STATUS & NAVIGATION BAR -->
+        <div id="ascii-header">
+┌──[ 🕋 99 TESBİH: SEFÎNE-İ NÛR (TASAVVUF RPG) ]───┬──[ <button class="ascii-btn" id="btn-toggle-camera">KAMERA: 2.5D İZO [V]</button> ]──┬──[ <button class="ascii-btn" id="btn-toggle-music">MÜZİK: 8-BIT [M]</button> ]──┬──[ <button class="ascii-btn" id="btn-menu">MENÜ [ESC]</button> ]──┐
+        </div>
+
+        <!-- FULLSCREEN OVERLAY (SPLASH, LOGO, MAIN MENU) -->
+        <div id="fullscreen-overlay">
+            <!-- Rendered by JS -->
+        </div>
+
+        <!-- IN-GAME SPLIT VIEW -->
+        <div id="gameplay-view">
+            <!-- LEFT: 2.5D Isometric 3D Room ASCII Panel -->
+            <div id="left-room-panel">
+                <div id="room-frame-top">┌──[ MAKÂM 1: İBTİDA HALVETGÂHI (2.5D İZOMETRİK) ]───┬──[ KONUM: (3.5, 6.0) ]──[ TEÇHİZAT: YALIN EL ]──┐</div>
+                
+                <div id="room-viewport-box">
+                    <div id="room-viewport"></div>
+                </div>
+
+                <div id="room-frame-mid">├──[ KONTROLLER & ETKİLEŞİM ]──────────────────────────────────────────────────────────────────┤</div>
+                <div id="room-controls-box">
+                    <div>> [W,A,S,D] 2.5D İzometrik Hareket │ [SPACE / E] İncele & Konuş │ [V] Kamera Değiştir │ [M] Müzik</div>
+                    <div id="interaction-hint" style="color: var(--term-gold); font-weight: bold; margin-top: 2px;">
+                        > Etkileşim: Halıdaki Pîr'e veya nesnelere yaklaşın.
+                    </div>
+                </div>
+                <div id="room-frame-bottom">└──[ 2.5D İZOMETRİK 3D ASCII DERİNLİK MOTORU (Z-DEPTH & ANİMASYONLU NESNELER) ]────────────────┘</div>
+            </div>
+
+            <!-- RIGHT: Disco Elysium Dialogue ASCII Panel -->
+            <div id="right-dialogue-panel">
+                <!-- Portrait Section -->
+                <div id="portrait-frame-top">┌──[ HÂL & SURET PORTRESİ (ASCII) ]────────────────────────────────────────────────────────────┐</div>
+                <div id="portrait-box"></div>
+                <div id="portrait-frame-bottom">└──[ İÇ MERTEBE GÖRÜNÜMÜ ]─────────────────────────────────────────────────────────────────────┘</div>
+
+                <!-- Dialogue History Section -->
+                <div id="dialogue-frame-top">┌──[ İÇ MONOLOG & HASBİHAL (DISCO ELYSIUM AKIŞI) ]────────────────────────────────────────────┐</div>
+                <div id="dialogue-history"></div>
+                <div id="dialogue-frame-bottom">├──[ İRADE & KELÂM SEÇENEKLERİ (1-9 Rakam veya Tıkla) ]────────────────────────────────────────┤</div>
+
+                <!-- Choices Section -->
+                <div id="choices-container"></div>
+                <div id="choices-frame-bottom">└──[ SÂLİKİN CEVABI ]──────────────────────────────────────────────────────────────────────────┘</div>
+            </div>
+        </div>
+
+        <!-- BOTTOM ASCII STATS & 99 BEADS BAR -->
+        <div id="ascii-footer">
+┌──[ SÂLİK DERECÂTI (WASM) ]───────────────────────────┬──[ 99 TESBİH İLERLEMESİ ]───────────────────────────────────┐
+│ NEFS: <span id="stat-nefs" style="color: var(--term-red); font-weight: bold;">1</span>  │ AKIL: <span id="stat-akil" style="color: var(--term-blue); font-weight: bold;">1</span>  │ KALP: <span id="stat-kalp" style="color: var(--term-green); font-weight: bold;">1</span>  │ RUH: <span id="stat-ruh" style="color: var(--term-gold); font-weight: bold;">1</span>  │ CAN: <span id="stat-hp" style="color: var(--term-green); font-weight: bold;">100/100</span>   │ <span id="bead-indicator" style="color: var(--term-gold); font-weight: bold;">[●○○○○○○○○○○○○○○○○○○○○] 01/99 Tane</span> (1. Çapraz / 1. Sekans)  │
+└──────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────┘
+        </div>
+    </div>
+
+    <script type="module" src="game.js"></script>
+</body>
+</html>
