@@ -1,11 +1,50 @@
+```text
+╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+║   ___   ___   _____ _____ ____  ____ ___ _   _                                           ║
+║  / _ \ / _ \ |_   _| ____/ ___|| __ )_ _| | | |      99 TESBİH: SEFÎNE-İ NÛR              ║
+║ | (_) | (_) |  | | |  _| \___ \|  _ \| || |_| |      Tasavvuf Fantazisi & Mistisizm       ║
+║  \__, |\__, |  | | | |___ ___) | |_) | ||  _  |      Disco Elysium Tarzı İç Monolog       ║
+║    /_/   /_/   |_| |_____|____/|____/___|_| |_|      2.5D Selçuklu Derinlik Mimarisi      ║
+║ ═════════════════════════════════════════════════════════════════════════════════════════ ║
+║                      .---======---.                                                       ║
+║   (*)               /   /  /\  \   \     PÎR: '99 makamlık sır seni bekler...'    (*)     ║
+║   |=|              |   |  /  \  |   |    SÂLİK: 'Nefsimi terbiye etmeye geldim.'  |=|     ║
+║                    |   | | ✦✦ | |   |                                                     ║
+║    [RAHLE]         |===|_|____|_|===|              [SANDIK]                               ║
+║      _/\_          ┌────────────────┐             .--------.                              ║
+║     /    \         │  ,-----.       │            / [====] /|                              ║
+║    /======\        │ / (O)   \      │           +--------+ |                              ║
+║     | || |         │|  (•_•)  |     │           | | [*] ||/                               ║
+║    /======\        │| /#|#|#\ |~o   │           +--------+                                ║
+║                    └────────────────┘                                                     ║
+║                                 (o)                                                       ║
+║                                /|#|\    [SÂLİK / DERVİŞ]                                  ║
+║                                /   \                                                      ║
+╚═══════════════════════════════════════════════════════════════════════════════════════════╝
+```
+
 # 🕋 99 TESBİH: SEFÎNE-İ NÛR (Tasavvuf Fantazisi ASCII RPG)
 
 > *"Men arefe nefsehû fekad arefe rabbehû"*  
 > *(Nefsini bilen, Rabbini bilir.)*
 
-**99 Tesbih: Sefîne-i Nûr**, tasavvuf fantazisi, İslam mistisizmi ve felsefi iç monologları bir araya getiren, baştan sona **saf ASCII / Box-Drawing** karakterleriyle tasarlanmış, **2.5D Selçuklu derinlik mimarisine** sahip bir retro RPG deneyimidir.
+🎮 **Canlı Oyna (GitHub Pages):** [https://gitmuhammedalbayrak.github.io/ascizt/](https://gitmuhammedalbayrak.github.io/ascizt/)
 
-Oyun, tarayıcıda doğrudan **WebAssembly (AssemblyScript)** motoru ile çalışmakta olup, test süreçlerinin ardından masaüstü (`.exe`) olarak Steam üzerinde yayınlanacak şekilde kurgulanmıştır.
+---
+
+> [!WARNING]
+> ### 🧪 DENEYSEL PROJE & ARAŞTIRMA PROTOTİPİ (EXPERIMENTAL PROTOTYPE)
+> Bu proje, **tamamen deneysel** bir konsept ve mekanik prototipidir. Amacı; modern web teknolojileri (WebAssembly), 8-bit Web Audio sentezleme ve Disco Elysium esintili çok sesli iç monolog diyalog yapısını **saf karakter tabanlı (ASCII / Box-Drawing) 2.5D mekan tasarımlarıyla** bir araya getiren özgün bir tasavvuf fantazisi RPG motorunun fizibilitesini test etmektir. 
+> 
+> Geliştirme süreci tarayıcı üzerinde sürdürülmekte olup ilerleyen safhalarda Steam için masaüstü (`.exe`) yapısına derlenecektir.
+
+---
+
+## 📖 Genel Bakış
+
+**99 Tesbih: Sefîne-i Nûr**, tasavvuf felsefesi, İslam mistisizmi ve felsefi iç çekişmeleri konu alan, hiçbir harici grafik/resim (PNG/JPG) kullanmadan **baştan sona harf ve sembollerle** hayat bulan bir seyr-i sülûk yolculuğudur.
+
+Oyun, tarayıcıda doğrudan **WebAssembly (AssemblyScript)** motoru ile çalışır.
 
 ---
 
