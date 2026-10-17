@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>99 TESBİH: SEFÎNE-İ NÛR - 32x32 HD ASCII RPG</title>
+    <title>99 TESBİH: SEFÎNE-İ NÛR - 128x128-BİT ASCII TEXTURE ENGINE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
 
@@ -43,7 +43,7 @@
         body {
             background-color: #000200;
             color: var(--term-green);
-            font-family: 'Fira Code', 'Courier New', monospace;
+            font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
             margin: 0;
             padding: 4px;
             display: flex;
@@ -58,7 +58,7 @@
         #crt-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.32) 50%),
                         linear-gradient(90deg, rgba(255, 0, 0, 0.015), rgba(0, 255, 0, 0.008), rgba(0, 0, 255, 0.015));
             background-size: 100% 3px, 3px 100%;
             pointer-events: none;
@@ -68,9 +68,9 @@
         /* Main ASCII Terminal Container */
         #terminal-container {
             width: 98vw;
-            max-width: 1580px;
+            max-width: 1620px;
             height: 97vh;
-            max-height: 920px;
+            max-height: 940px;
             display: flex;
             flex-direction: column;
             background-color: var(--term-bg);
@@ -134,9 +134,9 @@
             margin-bottom: 2px;
         }
 
-        /* LEFT: 32x32 HD ASCII Room Area */
+        /* LEFT: 128x128-Bit ASCII Shader & Model Engine Panel */
         #left-room-panel {
-            flex: 62;
+            flex: 63;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -158,43 +158,17 @@
             justify-content: center;
             border-left: 1px solid var(--term-border);
             border-right: 1px solid var(--term-border);
-            background: #010402;
+            background: #020603;
             overflow: hidden;
             padding: 2px;
         }
 
-        #room-viewport {
-            white-space: pre;
-            font-size: 7.5px;
-            line-height: 8px;
-            letter-spacing: 0px;
-            color: #55ff77;
-            font-weight: 600;
+        #room-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
-
-        /* 32x32 MULTI-MATERIAL COLOR PALETTE */
-        .c-player        { color: #e8f8f5; text-shadow: 0 0 4px rgba(255, 255, 255, 0.5); }
-        .c-player-armed  { color: #58d68d; text-shadow: 0 0 5px rgba(88, 214, 141, 0.7); }
-        .c-face          { color: #ffe0b2; text-shadow: 0 0 3px rgba(255, 224, 178, 0.5); }
-        .c-pir           { color: #48c9b0; text-shadow: 0 0 5px rgba(72, 201, 176, 0.6); }
-        .c-gold          { color: #f7dc6f; text-shadow: 0 0 5px rgba(247, 220, 111, 0.8); font-weight: bold; }
-        .c-steel         { color: #aeb6bf; text-shadow: 0 0 3px rgba(174, 182, 191, 0.5); }
-        .c-flame-1       { color: #ff5722; text-shadow: 0 0 8px rgba(255, 87, 34, 0.95); font-weight: bold; }
-        .c-flame-2       { color: #ffd54f; text-shadow: 0 0 8px rgba(255, 213, 79, 0.95); font-weight: bold; }
-        .c-smoke         { color: #6e8b74; font-weight: normal; }
-        .c-torch-glow    { color: #446633; background: rgba(255, 150, 0, 0.08); }
-        .c-stone-wall    { color: #2e7d32; font-weight: bold; }
-        .c-stone-fill    { color: #14381b; }
-        .c-stone-cap     { color: #66bb6a; font-weight: bold; }
-        .c-floor         { color: #193d20; }
-        .c-floor-edge    { color: #112a15; }
-        .c-carpet-border { color: #e67e22; font-weight: bold; }
-        .c-carpet-inner  { color: #b03a2e; }
-        .c-desk          { color: #d68910; text-shadow: 0 0 3px rgba(214, 137, 16, 0.45); }
-        .c-chest         { color: #ca6f1e; text-shadow: 0 0 3px rgba(202, 111, 30, 0.45); }
-        .c-door          { color: #48c9b0; text-shadow: 0 0 6px rgba(72, 201, 176, 0.75); }
-        .c-shadow        { color: #07170a; font-weight: bold; }
-        .c-ambient       { color: #3a6644; }
 
         #room-controls-box {
             border-left: 1px solid var(--term-border);
@@ -208,7 +182,7 @@
 
         /* RIGHT: Disco Elysium Dialogue Panel */
         #right-dialogue-panel {
-            flex: 38;
+            flex: 37;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -229,18 +203,21 @@
         #portrait-box {
             border-left: 1px solid var(--term-border);
             border-right: 1px solid var(--term-border);
-            padding: 6px 10px;
-            white-space: pre;
-            font-size: 10px;
-            line-height: 1.15;
-            color: var(--term-gold);
-            background: #030a04;
-            min-height: 152px;
-            max-height: 165px;
+            padding: 2px 4px;
+            background: #030904;
+            height: 185px;
+            min-height: 185px;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        #portrait-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
 
         #dialogue-history {
@@ -343,7 +320,7 @@
             padding: 4px 12px;
             font-size: 14px;
             border: 1px dashed var(--term-border);
-            width: 380px;
+            width: 420px;
             text-align: left;
         }
         .ascii-menu-item:hover {
@@ -365,7 +342,7 @@
     <div id="terminal-container">
         <!-- TOP ASCII STATUS & NAVIGATION BAR -->
         <div id="ascii-header">
-┌──[ 🕋 99 TESBİH: SEFÎNE-İ NÛR (32x32 HD ASCII RPG) ]───────────────────┬──[ <button class="ascii-btn" id="btn-toggle-music">MÜZİK: 8-BIT [M]</button> ]──┬──[ <button class="ascii-btn" id="btn-menu">MENÜ [ESC]</button> ]──┐
+┌──[ 99 TESBİH: SEFÎNE-İ NÛR (128x128-BİT ASCII TEXTURE & SHADER ENGINE) ]──┬──[ <button class="ascii-btn" id="btn-toggle-music">MÜZİK: 8-BIT [M]</button> ]──┬──[ <button class="ascii-btn" id="btn-menu">MENÜ [ESC]</button> ]──┐
         </div>
 
         <!-- FULLSCREEN OVERLAY (SPLASH, LOGO, MAIN MENU) -->
@@ -375,39 +352,41 @@
 
         <!-- IN-GAME SPLIT VIEW -->
         <div id="gameplay-view">
-            <!-- LEFT: 32x32 High-Density ASCII Room Panel -->
+            <!-- LEFT: 128x128-Bit Volumetric ASCII Room Panel -->
             <div id="left-room-panel">
-                <div id="room-frame-top">┌──[ MAKÂM 1: İBTİDA HALVETGÂHI (156x56 HD SAHNE) ]──┬──[ KONUM: (78, 51) ]──[ TEÇHİZAT: YALIN EL ]──┐</div>
+                <div id="room-frame-top">┌──[ MAKÂM 1: İBTİDA HALVETGÂHI (216x108 ASCII SHADER) ]──┬──[ KONUM: (108, 92) ]──[ TEÇHİZAT: YALIN EL ]──┐</div>
                 
                 <div id="room-viewport-box">
-                    <div id="room-viewport"></div>
+                    <canvas id="room-canvas"></canvas>
                 </div>
 
-                <div id="room-frame-mid">├──[ KONTROLLER & ETKİLEŞİM ]──────────────────────────────────────────────────────────────────┤</div>
+                <div id="room-frame-mid">├──[ KONTROLLER & ETKİLEŞİM ]───────────────────────────────────────────────────────────────────────────┤</div>
                 <div id="room-controls-box">
                     <div>> [W,A,S,D / Yön Tuşları] Odada Yürü │ [SPACE / E] İncele & Konuş │ [1-9] Seçim │ [M] Müzik</div>
                     <div id="interaction-hint" style="color: var(--term-gold); font-weight: bold; margin-top: 2px;">
-                        > Etkileşim: Halıdaki Pîr'e, Rahleye veya Sandığa yaklaşın.
+                        > Etkileşim: Halıdaki Pîr'e, Rahleye, Sandığa veya Taç Kapı'ya yaklaşın.
                     </div>
                 </div>
-                <div id="room-frame-bottom">└──[ 32x32 YÜKSEK YOĞUNLUKLU ASCII MOTORU (8.736 HÜCRE / Y-DEPTH SIRALAMA) ]────────────────────┘</div>
+                <div id="room-frame-bottom">└──[ 128x128-BİT VOLÜMETRİK ASCII TEXTURE & DİNAMİK IŞIK MOTORU (23.328 HÜCRE) ]────────────────────────┘</div>
             </div>
 
             <!-- RIGHT: Disco Elysium Dialogue ASCII Panel -->
             <div id="right-dialogue-panel">
                 <!-- Portrait Section -->
-                <div id="portrait-frame-top">┌──[ HÂL & SURET PORTRESİ (32x32 HD ASCII BÜST) ]──────────────────────────────────────────────┐</div>
-                <div id="portrait-box"></div>
-                <div id="portrait-frame-bottom">└──[ İÇ MERTEBE GÖRÜNÜMÜ ]─────────────────────────────────────────────────────────────────────┘</div>
+                <div id="portrait-frame-top">┌──[ HÂL & SURET PORTRESİ (128x128-BİT ASCII BÜST) ]────────────────────────────────────────────────────┐</div>
+                <div id="portrait-box">
+                    <canvas id="portrait-canvas"></canvas>
+                </div>
+                <div id="portrait-frame-bottom">└──[ İÇ MERTEBE GÖRÜNÜMÜ ]──────────────────────────────────────────────────────────────────────────────┘</div>
 
                 <!-- Dialogue History Section -->
-                <div id="dialogue-frame-top">┌──[ İÇ MONOLOG & HASBİHAL (DISCO ELYSIUM AKIŞI) ]────────────────────────────────────────────┐</div>
+                <div id="dialogue-frame-top">┌──[ İÇ MONOLOG & HASBİHAL (DISCO ELYSIUM AKIŞI) ]─────────────────────────────────────────────────────┐</div>
                 <div id="dialogue-history"></div>
-                <div id="dialogue-frame-bottom">├──[ İRADE & KELÂM SEÇENEKLERİ (1-9 Rakam veya Tıkla) ]────────────────────────────────────────┤</div>
+                <div id="dialogue-frame-bottom">├──[ İRADE & KELÂM SEÇENEKLERİ (1-9 Rakam veya Tıkla) ]─────────────────────────────────────────────────┤</div>
 
                 <!-- Choices Section -->
                 <div id="choices-container"></div>
-                <div id="choices-frame-bottom">└──[ SÂLİKİN CEVABI ]──────────────────────────────────────────────────────────────────────────┘</div>
+                <div id="choices-frame-bottom">└──[ SÂLİKİN CEVABI ]───────────────────────────────────────────────────────────────────────────────────┘</div>
             </div>
         </div>
 
