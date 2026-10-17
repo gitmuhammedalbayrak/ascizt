@@ -642,15 +642,32 @@ function startNewGame() {
   }
 }
 
-// RENDER ROOM & PORTRAIT VIA 128x128 ASCII TEXTURE ENGINE
+// RENDER ROOM & PORTRAIT VIA 128x128 ASCII TEXTURE ENGINE (60 FPS rAF Coalesced)
+let roomRafPending = false;
+let portraitRafPending = false;
+
 function renderRoom() {
-  const roomCanvas = document.getElementById("room-canvas");
-  GAME.asciiEngine.renderRoomToCanvas(roomCanvas, GAME.player, GAME.animTick);
+  if (roomRafPending) return;
+  roomRafPending = true;
+  requestAnimationFrame(() => {
+    roomRafPending = false;
+    const roomCanvas = document.getElementById("room-canvas");
+    if (roomCanvas) {
+      GAME.asciiEngine.renderRoomToCanvas(roomCanvas, GAME.player, GAME.animTick);
+    }
+  });
 }
 
 function renderPortrait() {
-  const portraitCanvas = document.getElementById("portrait-canvas");
-  GAME.asciiEngine.renderPortraitToCanvas(portraitCanvas, GAME.activePortrait, GAME.animTick);
+  if (portraitRafPending) return;
+  portraitRafPending = true;
+  requestAnimationFrame(() => {
+    portraitRafPending = false;
+    const portraitCanvas = document.getElementById("portrait-canvas");
+    if (portraitCanvas) {
+      GAME.asciiEngine.renderPortraitToCanvas(portraitCanvas, GAME.activePortrait, GAME.animTick);
+    }
+  });
 }
 
 function updateRoomHeaderUI() {

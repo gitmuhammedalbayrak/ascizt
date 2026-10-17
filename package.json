@@ -1,7 +1,7 @@
 {
   "name": "ascizt",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.2.1",
+  "description": "99 Tesbih: Sefîne-i Nûr - 128x128-Bit Volumetric ASCII RPG Engine",
   "main": "index.js",
   "scripts": {
     "test": "node --test",
