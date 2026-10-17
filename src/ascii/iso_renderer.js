@@ -1,21 +1,27 @@
-// 2.5D Frontal-Perspective Room Depth Engine for Sufi RPG (99 Tesbih)
-// Straight, detailed Seljuk architecture (Not crooked/diagonal)
-// Stable, dignified ASCII models with calm, non-jittery atmospheric animations
+// High-Resolution (32x32 Sprite Grade) 2.5D Seljuk Room Engine
+// Canvas: 156 columns x 56 rows (over 8,700 ASCII cells!)
+// Features: Multi-material per-glyph coloring, Y-Depth Painter's Algorithm, 32x32 Character Models
+
+import { CHARACTERS } from "./characters.js";
 
 export class IsoRenderer {
-  constructor(width = 62, height = 24) {
+  constructor(width = 156, height = 56) {
     this.width = width;
     this.height = height;
     this.tick = 0;
   }
 
-  // Render the entire 2.5D Architectural Room
   renderScene(room, player, animTick) {
     this.tick = animTick;
 
-    // Base character buffer (24 rows x 62 columns)
     const charBuf = Array.from({ length: this.height }, () => Array(this.width).fill(" "));
     const styleBuf = Array.from({ length: this.height }, () => Array(this.width).fill(""));
+
+    const putChar = (r, c, ch, style = "") => {
+      if (r < 0 || r >= this.height || c < 0 || c >= this.width) return;
+      charBuf[r][c] = ch;
+      if (style) styleBuf[r][c] = style;
+    };
 
     const putStr = (r, c, str, style = "") => {
       if (r < 0 || r >= this.height) return;
@@ -28,140 +34,267 @@ export class IsoRenderer {
       }
     };
 
-    // 1. OUTER STONE WALLS & VAULTED CEILING ARCH (Düz ve Sağlam Mimari)
-    putStr(0,  0, "╔════════════════════════════════════════════════════════════╗", "c-stone-cap");
-    putStr(1,  0, "║ [KANDİL]           ╔════════[ SIR KAPISI ]════════╗ [KANDİL] ║", "c-stone-wall");
-    putStr(2,  0, "║   ( )              ║         .---======---.       ║   ( )   ║", "c-stone-wall");
-    putStr(3,  0, "║   |=|              ║        /   /  /\\  \\   \\      ║   |=|   ║", "c-stone-wall");
-    putStr(4,  0, "║                    ║       |   |  /  \\  |   |     ║         ║", "c-stone-wall");
-    putStr(5,  0, "║                    ║       |   | | :: | |   |     ║         ║", "c-stone-wall");
-    putStr(6,  0, "║                    ║       |===|_|____|_|===|     ║         ║", "c-stone-wall");
-    putStr(7,  0, "╠════════════════════╩══════════════════════════════╩═════════╣", "c-stone-cap");
-
-    // Side walls and floor background
-    for (let r = 8; r < 23; r++) {
-      charBuf[r][0] = "║";
-      charBuf[r][1] = "░";
-      charBuf[r][this.width - 2] = "░";
-      charBuf[r][this.width - 1] = "║";
-      styleBuf[r][0] = "c-stone-wall";
-      styleBuf[r][1] = "c-stone-fill";
-      styleBuf[r][this.width - 2] = "c-stone-fill";
-      styleBuf[r][this.width - 1] = "c-stone-wall";
-
-      // Subtle, calm floor paving pattern
-      for (let c = 2; c < this.width - 2; c++) {
-        if ((r + c) % 4 === 0 && (r % 2 === 0)) {
-          charBuf[r][c] = "·";
-          styleBuf[r][c] = "c-floor";
+    // Draw transparent multi-line sprite with custom per-row/per-char colorizer
+    const drawModel = (topR, leftC, lines, colorFn) => {
+      for (let r = 0; r < lines.length; r++) {
+        const rowStr = lines[r];
+        const targetR = topR + r;
+        if (targetR < 0 || targetR >= this.height) continue;
+        for (let c = 0; c < rowStr.length; c++) {
+          const ch = rowStr[c];
+          if (ch === " ") continue; // Transparent background
+          const targetC = leftC + c;
+          if (targetC < 0 || targetC >= this.width) continue;
+          const style = colorFn ? colorFn(r, c, ch, rowStr) : "c-player";
+          charBuf[targetR][targetC] = ch;
+          styleBuf[targetR][targetC] = style;
         }
       }
-    }
-    putStr(23, 0, "╚════════════════════════════════════════════════════════════╝", "c-stone-cap");
+    };
 
-    // 2. ANIMATED TORCHES (Sakin ve Göz Yormayan Titreşim: 2 sakin evre)
-    const flameState = Math.floor(this.tick / 2) % 2;
-    const flameChar = flameState === 0 ? "(*)" : "(^)";
-    putStr(2, 4, flameChar, "c-flame-1");
-    putStr(2, 55, flameChar, "c-flame-1");
-    // Warm steady wall glow
-    putStr(3, 4, "|=|", "c-stone-cap");
-    putStr(3, 55, "|=|", "c-stone-cap");
+    // =========================================================================
+    // 1. NORTH WALL ARCHITECTURE (Rows 0..17, Width 156)
+    // =========================================================================
+    putStr(0, 0, "╔" + "═".repeat(this.width - 2) + "╗", "c-stone-cap");
 
-    // 3. SELÇUKLU SIR KAPISI (Kuzey Kemeri İçi Nur / Sır Parıltısı)
-    const portalGleam = Math.floor(this.tick / 3) % 2 === 0 ? "::" : "✦✦";
-    putStr(5, 27, portalGleam, "c-door");
+    // Seljuk Geometric Mukarnas Frieze on Row 1
+    let frieze = "║ ";
+    for (let i = 0; i < 19; i++) frieze += "❖══╦══❖ ";
+    frieze = frieze.slice(0, this.width - 1) + "║";
+    putStr(1, 0, frieze, "c-stone-wall");
 
-    // 4. SELÇUKLU MERKEZ SECCADESİ / HALISI (Ortada Düzgün Yerleşim)
-    // Rows 9 to 18, Cols 17 to 44
-    putStr(9,  17, "┌──────────────────────────┐", "c-carpet-border");
-    for (let r = 10; r <= 17; r++) {
-      putStr(r, 17, "│", "c-carpet-border");
-      putStr(r, 44, "│", "c-carpet-border");
-      for (let c = 18; c <= 43; c++) {
-        const isBorder = (c === 18 || c === 43 || r === 10 || r === 17);
-        if (isBorder) {
-          charBuf[r][c] = "░";
-          styleBuf[r][c] = "c-carpet-border";
+    // Ashlar Stone Masonry Courses (Rows 2..16)
+    for (let r = 2; r <= 16; r++) {
+      putChar(r, 0, "║", "c-stone-cap");
+      putChar(r, this.width - 1, "║", "c-stone-cap");
+      for (let c = 1; c < this.width - 1; c++) {
+        if (r % 3 === 0) {
+          putChar(r, c, "─", "c-stone-fill");
         } else {
-          charBuf[r][c] = (r + c) % 2 === 0 ? "≈" : "═";
-          styleBuf[r][c] = "c-carpet-inner";
+          const offset = (Math.floor(r / 3) % 2) * 6;
+          if ((c + offset) % 12 === 0) {
+            putChar(r, c, "│", "c-stone-fill");
+          } else if ((r + c) % 5 === 0) {
+            putChar(r, c, "░", "c-stone-fill");
+          }
         }
       }
     }
-    putStr(18, 17, "└──────────────────────────┘", "c-carpet-border");
 
-    // 5. CEVİZ RAHLE VE MUSHAF (Sol Tarafta Sağlam Yerleşim)
-    // Rows 11 to 16, Cols 4 to 12
-    putStr(10, 5, " [RAHLE] ", "c-gold");
-    putStr(11, 6, " _/\\_ ", "c-desk");
-    putStr(12, 5, " /    \\ ", "c-desk");
-    putStr(13, 5, "/======\\", "c-desk");
-    putStr(14, 6, " | || | ", "c-desk");
-    putStr(15, 5, "/======\\", "c-desk");
+    // Wall Base Wainscoting / Dado Moulding (Row 17)
+    putStr(17, 0, "╠" + "═".repeat(this.width - 2) + "╣", "c-stone-cap");
 
-    // 6. KADİM SEDİR SANDIĞI (Sağ Tarafta Sağlam Yerleşim)
-    // Rows 11 to 15, Cols 47 to 58
-    const lockGleam = Math.floor(this.tick / 4) % 2 === 0 ? "*" : "✦";
-    putStr(10, 48, " [SANDIK] ", "c-gold");
-    putStr(11, 48, ".--------.", "c-chest");
-    putStr(12, 47, "/ [====] /|", "c-chest");
-    putStr(13, 46, "+--------+ |", "c-chest");
-    putStr(14, 46, `| | [${lockGleam}] ||/`, "c-chest");
-    putStr(15, 46, "+--------+", "c-chest");
+    // =========================================================================
+    // 2. PERSPECTIVE SIDE WALLS & FLOOR PAVING (Rows 18..54)
+    // =========================================================================
+    for (let r = 18; r < this.height - 1; r++) {
+      // Left & Right 2.5D Stone Pilasters
+      putStr(r, 0, "║██▒│", "c-stone-wall");
+      putStr(r, this.width - 5, "│▒██║", "c-stone-wall");
 
-    // 7. PÎR-İ ŞEYH BURHÂNEDDİN (Halı Üzerinde Vakur ve Sakin Oturan Mürşid)
-    // Rows 11 to 16, Cols 27 to 34
-    const pirBead = Math.floor(this.tick / 2) % 2 === 0 ? "o~" : "~o";
-    putStr(11, 28, " ,-----. ", "c-pir");
-    putStr(12, 27, "/ (O)   \\", "c-pir");
-    putStr(13, 27, "|  (•_•)  |", "c-pir");
-    putStr(14, 27, `| /#|#|#\\ |${pirBead}`, "c-pir");
-    putStr(15, 27, " \\=======/", "c-pir");
-    // Sheikh's calm cushion shadow
-    putStr(16, 26, "░░░░░░░░░░░", "c-carpet-inner");
+      if (r % 6 === 0) {
+        putStr(r, 0, "╠═══╡", "c-stone-cap");
+        putStr(r, this.width - 5, "╞═══╣", "c-stone-cap");
+      }
 
-    // 8. SÂLİK / OYUNCU (Zeminde Serbestçe Yürüyen Karakter)
-    const pr = Math.round(player.y);
-    const pc = Math.round(player.x);
-    const stepF = player.animFrame % 2;
-
-    let pSprite = [];
-    if (player.direction === "up") {
-      pSprite = [
-        "  ( )  ",
-        " /|#|\\ ",
-        stepF === 0 ? "  / \\  " : "  | \\  "
-      ];
-    } else if (player.direction === "left") {
-      pSprite = [
-        " <(o)  ",
-        "  /#|  ",
-        stepF === 0 ? "  / >  " : "   |   "
-      ];
-    } else if (player.direction === "right") {
-      pSprite = [
-        "  (o)> ",
-        "  |#\\  ",
-        stepF === 0 ? "  < \\  " : "   |   "
-      ];
-    } else { // down (default)
-      pSprite = [
-        "  (o)  ",
-        " /|#|\\ ",
-        stepF === 0 ? "  / \\  " : "  / |  "
-      ];
+      // Perspective Stone Floor Tiling
+      for (let c = 5; c < this.width - 5; c++) {
+        // Horizontal stone joint lines every 4 rows
+        if (r % 4 === 0) {
+          putChar(r, c, (c % 14 === 0) ? "┼" : "─", "c-floor-edge");
+        } else if (c % 14 === 0) {
+          putChar(r, c, "│", "c-floor-edge");
+        } else if ((r % 2 === 0) && ((c + r) % 7 === 0)) {
+          putChar(r, c, "·", "c-floor");
+        }
+      }
     }
 
-    // Shadow under feet
-    putStr(pr + 1, pc - 2, "(···)", "c-shadow");
+    // Bottom Threshold Border (Row 55)
+    putStr(this.height - 1, 0, "╚" + "═".repeat(this.width - 2) + "╝", "c-stone-cap");
 
-    // Draw player sprite
-    for (let i = 0; i < pSprite.length; i++) {
-      putStr(pr - 2 + i, pc - 3, pSprite[i], "c-player");
+    // =========================================================================
+    // 3. GRAND CENTRAL SELJUK PRAYER CARPET / HALI (Rows 21..45, Cols 44..112)
+    // =========================================================================
+    const cLeft = 44;
+    const cRight = 111;
+    const cTop = 21;
+    const cBot = 45;
+    const cWidth = cRight - cLeft + 1;
+
+    // Top & Bottom Silk Fringes (Saçaklar)
+    putStr(cTop - 1, cLeft + 2, "╥".repeat(cWidth - 4), "c-gold");
+    putStr(cBot + 1, cLeft + 2, "╨".repeat(cWidth - 4), "c-gold");
+
+    // Outer Carpet Frame
+    putStr(cTop, cLeft, "╔" + "═".repeat(cWidth - 2) + "╗", "c-carpet-border");
+    putStr(cBot, cLeft, "╚" + "═".repeat(cWidth - 2) + "╝", "c-carpet-border");
+
+    for (let r = cTop + 1; r < cBot; r++) {
+      putChar(r, cLeft, "║", "c-carpet-border");
+      putChar(r, cRight, "║", "c-carpet-border");
+
+      for (let c = cLeft + 1; c < cRight; c++) {
+        const dr = r - cTop;
+        const dc = c - cLeft;
+        const mr = cBot - r;
+        const mc = cRight - c;
+
+        // Outer Guard Border
+        if (dr === 1 || mr === 1 || dc <= 2 || mc <= 2) {
+          const ch = (dr + dc) % 2 === 0 ? "▒" : "░";
+          putChar(r, c, ch, "c-carpet-border");
+        }
+        // Inner Geometric Frame
+        else if (dr === 2 || mr === 2 || dc === 3 || mc === 3) {
+          putChar(r, c, (dr + dc) % 4 === 0 ? "❖" : "═", "c-gold");
+        }
+        // Central Crimson Field
+        else {
+          // Center Medallion geometry
+          const centerR = Math.floor((cTop + cBot) / 2);
+          const centerC = Math.floor((cLeft + cRight) / 2);
+          const distR = Math.abs(r - centerR);
+          const distC = Math.abs(c - centerC);
+
+          if (distR * 2 + distC <= 8) {
+            putChar(r, c, (distR + distC) % 2 === 0 ? "❂" : "░", "c-gold");
+          } else {
+            putChar(r, c, (r + c) % 3 === 0 ? "≈" : "░", "c-carpet-inner");
+          }
+        }
+      }
     }
 
-    // Convert buffers into styled HTML
+    // =========================================================================
+    // 4. WALL SCONCES & MONUMENTAL TAÇ KAPI (North Wall Fixtures)
+    // =========================================================================
+    const animF = Math.floor(this.tick / 2) % 2;
+
+    // Left & Right Wall Kandils (16x11)
+    const torchSprite = CHARACTERS.torch.frames[animF];
+    const torchColorFn = (r, c, ch) => {
+      if (r <= 4 && ch !== "│" && ch !== "╭" && ch !== "╮" && ch !== "─") {
+        return ch === "█" || ch === "✦" ? "c-flame-2" : "c-flame-1";
+      }
+      if (r === 5 || ch === "╦" || ch === "╩" || ch === "█") return "c-gold";
+      return "c-stone-cap";
+    };
+    drawModel(3, 14, torchSprite, torchColorFn);
+    drawModel(3, 126, torchSprite, torchColorFn);
+    putStr(15, 16, "[ SOL KANDİL ]", "c-gold");
+    putStr(15, 127, "[ SAĞ KANDİL ]", "c-gold");
+
+    // Selçuklu Taç Kapı / Sır Kapısı (50x16 at Center of North Wall)
+    const doorSprite = CHARACTERS.door.frames[animF];
+    const doorColorFn = (r, c, ch) => {
+      if (r === 1 && (ch === "❖" || (c >= 16 && c <= 33))) return "c-gold";
+      if (ch === "✦" || ch === "❖" || ch === "◈") return "c-gold";
+      if (c >= 3 && c <= 6 && r >= 3 && r <= 14) return "c-door";
+      if (c >= 42 && c <= 45 && r >= 3 && r <= 14) return "c-door";
+      if (ch === "░" || ch === "▒" || ch === "▓") return "c-door";
+      return "c-stone-cap";
+    };
+    drawModel(1, 53, doorSprite, doorColorFn);
+
+    // =========================================================================
+    // 5. Y-DEPTH SORTED 32x32 ROOM ENTITIES (Pîr, Rahle, Sandık, Sâlik)
+    // =========================================================================
+    const entities = [
+      // Pîr-i Şeyh Burhâneddin (Sitting on the upper center of the carpet)
+      {
+        id: "pir",
+        footY: 34,
+        render: () => {
+          const pirSprite = CHARACTERS.pir.frames[animF];
+          // Label above Pîr
+          putStr(15, 65, "⟦ PÎR-İ ŞEYH BURHÂNEDDİN ⟧", "c-pir");
+          drawModel(16, 62, pirSprite, (r, c, ch) => {
+            if (r <= 2) return "c-gold"; // Sikke dome
+            if (r >= 3 && r <= 4) return "c-stone-cap"; // Green Destar wrap
+            if (ch === "o" || ch === "•" || ch === "❖") return "c-gold"; // 99-bead Tesbih
+            if (r >= 6 && r <= 13 && (ch === "●" || ch === "─" || ch === "░" || ch === "▒" || ch === "═")) {
+              return "c-player"; // Face & white beard
+            }
+            return "c-pir"; // Turquoise dervish cloak
+          });
+        }
+      },
+
+      // Ceviz Rahle & Mushaf (Left side of room)
+      {
+        id: "desk",
+        footY: 41,
+        render: () => {
+          const deskSprite = CHARACTERS.desk.frames[animF];
+          putStr(23, 12, "⟦ CEVİZ RAHLE & MUSHAF ⟧", "c-gold");
+          drawModel(25, 8, deskSprite, (r, c, ch) => {
+            if (ch === "*" || ch === "^" || ch === "✦") return "c-flame-2";
+            if (ch === "❂" || ch === "▼") return "c-gold";
+            if (ch === "≡" || (r >= 3 && r <= 6 && ch === "░")) return "c-player"; // Parchment
+            if (c <= 8 || c >= 23) return "c-gold"; // Brass candlesticks
+            return "c-desk"; // Carved walnut wood
+          });
+        }
+      },
+
+      // Kadim Sedir Sandığı (Right side of room)
+      {
+        id: "chest",
+        footY: 40,
+        render: () => {
+          const chestSprite = CHARACTERS.chest.frames[animF];
+          putStr(24, 119, "⟦ KADİM SEDİR SANDIĞI ⟧", "c-gold");
+          drawModel(26, 114, chestSprite, (r, c, ch) => {
+            if (ch === "✦" || ch === "*" || ch === "❖" || ch === "[" || ch === "]") return "c-gold";
+            if (ch === "█") return "c-steel"; // Forged iron bands
+            return "c-chest"; // Cedarwood planks
+          });
+        }
+      },
+
+      // Sâlik / Player (Dynamic position)
+      {
+        id: "player",
+        footY: Math.round(player.y),
+        render: () => {
+          const pr = Math.round(player.y);
+          const pc = Math.round(player.x);
+          const isArmed = player.equipped.weapon !== "Yalın El";
+          const modelSet = isArmed ? CHARACTERS.player.armed : CHARACTERS.player.unarmed;
+          const dirFrames = modelSet[player.direction] || modelSet.down;
+          const sprite = dirFrames[player.animFrame % 2];
+
+          // Elliptical ground shadow beneath boots
+          putStr(pr, pc - 9, "▄▄██████████████████▄▄", "c-shadow");
+
+          // Draw 26x16 high-detail player sprite
+          drawModel(pr - 15, pc - 13, sprite, (r, c, ch) => {
+            // Staff on right or left side
+            if (isArmed && ((player.direction !== "left" && c >= 21) || (player.direction === "left" && c <= 5))) {
+              return ch === "◯" || ch === "▓" ? "c-gold" : "c-desk";
+            }
+            // Sikke (Keçe Külah)
+            if (r <= 3) return isArmed ? "c-gold" : "c-chest";
+            // Face & Eyes
+            if (r >= 4 && r <= 8) return "c-face";
+            // Belt (Kuşak) & Emblem
+            if (ch === "❖" || ch === "╠" || ch === "╣" || ch === "╪" || ch === "═") return "c-gold";
+            // Boots
+            if (r === 15) return "c-chest";
+            // Hırka Cloak
+            return isArmed ? "c-player-armed" : "c-player";
+          });
+        }
+      }
+    ];
+
+    // Sort by footY (Painter's Algorithm: back-to-front)
+    entities.sort((a, b) => a.footY - b.footY);
+    for (const ent of entities) {
+      ent.render();
+    }
+
     return this.buffersToHTML(charBuf, styleBuf);
   }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>99 TESBİH: SEFÎNE-İ NÛR - 2.5D İZOMETRİK ASCII RPG</title>
+    <title>99 TESBİH: SEFÎNE-İ NÛR - 32x32 HD ASCII RPG</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
 
@@ -30,7 +30,6 @@
             scrollbar-color: var(--term-green-dim) var(--term-bg);
         }
 
-        /* Custom ASCII-like thin scrollbar */
         *::-webkit-scrollbar {
             width: 6px;
         }
@@ -46,7 +45,7 @@
             color: var(--term-green);
             font-family: 'Fira Code', 'Courier New', monospace;
             margin: 0;
-            padding: 6px;
+            padding: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -59,8 +58,8 @@
         #crt-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%),
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.015), rgba(0, 255, 0, 0.008), rgba(0, 0, 255, 0.015));
             background-size: 100% 3px, 3px 100%;
             pointer-events: none;
             z-index: 9999;
@@ -68,15 +67,15 @@
 
         /* Main ASCII Terminal Container */
         #terminal-container {
-            width: 1280px;
-            max-width: 99vw;
-            height: 750px;
-            max-height: 98vh;
+            width: 98vw;
+            max-width: 1580px;
+            height: 97vh;
+            max-height: 920px;
             display: flex;
             flex-direction: column;
             background-color: var(--term-bg);
             border: 1px solid var(--term-border);
-            box-shadow: 0 0 20px rgba(51, 255, 102, 0.12), inset 0 0 40px rgba(0,0,0,0.85);
+            box-shadow: 0 0 24px rgba(51, 255, 102, 0.14), inset 0 0 40px rgba(0,0,0,0.85);
             padding: 6px;
             font-size: 13px;
             line-height: 1.25;
@@ -88,7 +87,8 @@
             color: var(--term-green);
             margin-bottom: 2px;
             font-weight: 600;
-            font-size: 12.5px;
+            font-size: 12px;
+            overflow: hidden;
         }
 
         .ascii-btn {
@@ -134,9 +134,9 @@
             margin-bottom: 2px;
         }
 
-        /* LEFT: 2.5D Isometric Room Area */
+        /* LEFT: 32x32 HD ASCII Room Area */
         #left-room-panel {
-            flex: 58;
+            flex: 62;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -147,6 +147,8 @@
             white-space: pre;
             color: var(--term-green);
             font-weight: 600;
+            font-size: 11.5px;
+            overflow: hidden;
         }
 
         #room-viewport-box {
@@ -163,32 +165,35 @@
 
         #room-viewport {
             white-space: pre;
-            font-size: 13.5px;
-            line-height: 1.14;
+            font-size: 7.5px;
+            line-height: 8px;
+            letter-spacing: 0px;
             color: #55ff77;
-            text-shadow: 0 0 3px rgba(51, 255, 102, 0.3);
-            font-weight: bold;
+            font-weight: 600;
         }
 
-        /* 2.5D ISOMETRIC COLOR STYLES */
-        .c-player        { color: #ffffff; text-shadow: 0 0 6px rgba(255, 255, 255, 0.8); }
-        .c-pir           { color: #76d7c4; text-shadow: 0 0 5px rgba(118, 215, 196, 0.6); }
+        /* 32x32 MULTI-MATERIAL COLOR PALETTE */
+        .c-player        { color: #e8f8f5; text-shadow: 0 0 4px rgba(255, 255, 255, 0.5); }
+        .c-player-armed  { color: #58d68d; text-shadow: 0 0 5px rgba(88, 214, 141, 0.7); }
+        .c-face          { color: #ffe0b2; text-shadow: 0 0 3px rgba(255, 224, 178, 0.5); }
+        .c-pir           { color: #48c9b0; text-shadow: 0 0 5px rgba(72, 201, 176, 0.6); }
         .c-gold          { color: #f7dc6f; text-shadow: 0 0 5px rgba(247, 220, 111, 0.8); font-weight: bold; }
-        .c-flame-1       { color: #ff5722; text-shadow: 0 0 8px rgba(255, 87, 34, 0.9); font-weight: bold; }
-        .c-flame-2       { color: #ffc107; text-shadow: 0 0 8px rgba(255, 193, 7, 0.9); font-weight: bold; }
+        .c-steel         { color: #aeb6bf; text-shadow: 0 0 3px rgba(174, 182, 191, 0.5); }
+        .c-flame-1       { color: #ff5722; text-shadow: 0 0 8px rgba(255, 87, 34, 0.95); font-weight: bold; }
+        .c-flame-2       { color: #ffd54f; text-shadow: 0 0 8px rgba(255, 213, 79, 0.95); font-weight: bold; }
         .c-smoke         { color: #6e8b74; font-weight: normal; }
         .c-torch-glow    { color: #446633; background: rgba(255, 150, 0, 0.08); }
         .c-stone-wall    { color: #2e7d32; font-weight: bold; }
-        .c-stone-fill    { color: #1b4d24; }
+        .c-stone-fill    { color: #14381b; }
         .c-stone-cap     { color: #66bb6a; font-weight: bold; }
-        .c-floor         { color: #1a4220; }
-        .c-floor-edge    { color: #2d6635; }
-        .c-carpet-border { color: #d35400; font-weight: bold; }
-        .c-carpet-inner  { color: #c0392b; }
-        .c-desk          { color: #d4ac0d; text-shadow: 0 0 4px rgba(212, 172, 13, 0.5); }
-        .c-chest         { color: #e59866; text-shadow: 0 0 4px rgba(229, 152, 102, 0.5); }
-        .c-door          { color: #48c9b0; text-shadow: 0 0 6px rgba(72, 201, 176, 0.8); }
-        .c-shadow        { color: #0a1f0d; font-weight: bold; }
+        .c-floor         { color: #193d20; }
+        .c-floor-edge    { color: #112a15; }
+        .c-carpet-border { color: #e67e22; font-weight: bold; }
+        .c-carpet-inner  { color: #b03a2e; }
+        .c-desk          { color: #d68910; text-shadow: 0 0 3px rgba(214, 137, 16, 0.45); }
+        .c-chest         { color: #ca6f1e; text-shadow: 0 0 3px rgba(202, 111, 30, 0.45); }
+        .c-door          { color: #48c9b0; text-shadow: 0 0 6px rgba(72, 201, 176, 0.75); }
+        .c-shadow        { color: #07170a; font-weight: bold; }
         .c-ambient       { color: #3a6644; }
 
         #room-controls-box {
@@ -203,7 +208,7 @@
 
         /* RIGHT: Disco Elysium Dialogue Panel */
         #right-dialogue-panel {
-            flex: 42;
+            flex: 38;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -211,10 +216,14 @@
         }
 
         /* Portrait Frame */
-        #portrait-frame-top, #portrait-frame-bottom {
+        #portrait-frame-top, #portrait-frame-bottom,
+        #dialogue-frame-top, #dialogue-frame-bottom,
+        #choices-frame-top, #choices-frame-bottom {
             white-space: pre;
             color: var(--term-green);
             font-weight: 600;
+            font-size: 11.5px;
+            overflow: hidden;
         }
 
         #portrait-box {
@@ -222,20 +231,16 @@
             border-right: 1px solid var(--term-border);
             padding: 6px 10px;
             white-space: pre;
-            font-size: 11px;
-            line-height: 1.18;
+            font-size: 10px;
+            line-height: 1.15;
             color: var(--term-gold);
             background: #030a04;
-            min-height: 110px;
-            max-height: 125px;
+            min-height: 152px;
+            max-height: 165px;
             overflow: hidden;
-        }
-
-        /* Dialogue Log Frame */
-        #dialogue-frame-top, #dialogue-frame-bottom {
-            white-space: pre;
-            color: var(--term-green);
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #dialogue-history {
@@ -281,17 +286,10 @@
         .voice-dervis .node-speaker { color: var(--term-cyan); }
 
         .voice-salik { border-left-color: #ffffff; color: #f0fff0; }
-        .voice-salik .node-speaker { color: var(--term-ffffff); }
+        .voice-salik .node-speaker { color: #ffffff; }
 
         .voice-system { border-left-color: #888888; color: #cccccc; }
         .voice-system .node-speaker { color: #aaaaaa; }
-
-        /* Choices Frame */
-        #choices-frame-top, #choices-frame-bottom {
-            white-space: pre;
-            color: var(--term-green);
-            font-weight: 600;
-        }
 
         #choices-container {
             border-left: 1px solid var(--term-border);
@@ -301,7 +299,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            max-height: 160px;
+            max-height: 155px;
             overflow-y: auto;
         }
 
@@ -331,8 +329,9 @@
             white-space: pre;
             color: var(--term-green);
             font-weight: 600;
-            font-size: 12px;
+            font-size: 11.5px;
             margin-top: 2px;
+            overflow: hidden;
         }
 
         /* Menu Select Buttons */
@@ -366,7 +365,7 @@
     <div id="terminal-container">
         <!-- TOP ASCII STATUS & NAVIGATION BAR -->
         <div id="ascii-header">
-┌──[ 🕋 99 TESBİH: SEFÎNE-İ NÛR (TASAVVUF RPG) ]───┬──[ <button class="ascii-btn" id="btn-toggle-camera">KAMERA: 2.5D İZO [V]</button> ]──┬──[ <button class="ascii-btn" id="btn-toggle-music">MÜZİK: 8-BIT [M]</button> ]──┬──[ <button class="ascii-btn" id="btn-menu">MENÜ [ESC]</button> ]──┐
+┌──[ 🕋 99 TESBİH: SEFÎNE-İ NÛR (32x32 HD ASCII RPG) ]───────────────────┬──[ <button class="ascii-btn" id="btn-toggle-music">MÜZİK: 8-BIT [M]</button> ]──┬──[ <button class="ascii-btn" id="btn-menu">MENÜ [ESC]</button> ]──┐
         </div>
 
         <!-- FULLSCREEN OVERLAY (SPLASH, LOGO, MAIN MENU) -->
@@ -376,9 +375,9 @@
 
         <!-- IN-GAME SPLIT VIEW -->
         <div id="gameplay-view">
-            <!-- LEFT: 2.5D Isometric 3D Room ASCII Panel -->
+            <!-- LEFT: 32x32 High-Density ASCII Room Panel -->
             <div id="left-room-panel">
-                <div id="room-frame-top">┌──[ MAKÂM 1: İBTİDA HALVETGÂHI (2.5D İZOMETRİK) ]───┬──[ KONUM: (3.5, 6.0) ]──[ TEÇHİZAT: YALIN EL ]──┐</div>
+                <div id="room-frame-top">┌──[ MAKÂM 1: İBTİDA HALVETGÂHI (156x56 HD SAHNE) ]──┬──[ KONUM: (78, 51) ]──[ TEÇHİZAT: YALIN EL ]──┐</div>
                 
                 <div id="room-viewport-box">
                     <div id="room-viewport"></div>
@@ -386,18 +385,18 @@
 
                 <div id="room-frame-mid">├──[ KONTROLLER & ETKİLEŞİM ]──────────────────────────────────────────────────────────────────┤</div>
                 <div id="room-controls-box">
-                    <div>> [W,A,S,D] 2.5D İzometrik Hareket │ [SPACE / E] İncele & Konuş │ [V] Kamera Değiştir │ [M] Müzik</div>
+                    <div>> [W,A,S,D / Yön Tuşları] Odada Yürü │ [SPACE / E] İncele & Konuş │ [1-9] Seçim │ [M] Müzik</div>
                     <div id="interaction-hint" style="color: var(--term-gold); font-weight: bold; margin-top: 2px;">
-                        > Etkileşim: Halıdaki Pîr'e veya nesnelere yaklaşın.
+                        > Etkileşim: Halıdaki Pîr'e, Rahleye veya Sandığa yaklaşın.
                     </div>
                 </div>
-                <div id="room-frame-bottom">└──[ 2.5D İZOMETRİK 3D ASCII DERİNLİK MOTORU (Z-DEPTH & ANİMASYONLU NESNELER) ]────────────────┘</div>
+                <div id="room-frame-bottom">└──[ 32x32 YÜKSEK YOĞUNLUKLU ASCII MOTORU (8.736 HÜCRE / Y-DEPTH SIRALAMA) ]────────────────────┘</div>
             </div>
 
             <!-- RIGHT: Disco Elysium Dialogue ASCII Panel -->
             <div id="right-dialogue-panel">
                 <!-- Portrait Section -->
-                <div id="portrait-frame-top">┌──[ HÂL & SURET PORTRESİ (ASCII) ]────────────────────────────────────────────────────────────┐</div>
+                <div id="portrait-frame-top">┌──[ HÂL & SURET PORTRESİ (32x32 HD ASCII BÜST) ]──────────────────────────────────────────────┐</div>
                 <div id="portrait-box"></div>
                 <div id="portrait-frame-bottom">└──[ İÇ MERTEBE GÖRÜNÜMÜ ]─────────────────────────────────────────────────────────────────────┘</div>
 

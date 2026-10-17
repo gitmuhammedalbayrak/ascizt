@@ -1,5 +1,5 @@
 // 99 TESBİH: SEFÎNE-İ NÛR - Master Terminal RPG Engine
-// Straight 2.5D Seljuk Depth Architecture + Disco Elysium Dialogue + WebAssembly
+// 32x32-Grade High-Density ASCII Graphics Engine (156x56 Canvas) + Disco Elysium Dialogue + WebAssembly
 
 import { PORTRAITS } from "./src/ascii/portraits.js";
 import { CHARACTERS } from "./src/ascii/characters.js";
@@ -12,15 +12,15 @@ import { audio } from "./src/audio.js";
 // Global Game State
 const GAME = {
   wasm: null,
-  isoRenderer: new IsoRenderer(62, 24),
+  isoRenderer: new IsoRenderer(156, 56),
   screen: "SPLASH", // SPLASH, LOGO, MENU, GAMEPLAY
   currentSequence: 1,
   currentRoomId: 1,
   roomData: null,
   player: {
-    // 2.5D Straight Room Coordinates (Cols: 0..61, Rows: 0..23)
-    x: 30,
-    y: 20,
+    // High-Res 156x56 Room Coordinates
+    x: 78,
+    y: 51,
     direction: "up", // up, down, left, right
     animFrame: 0,
     equipped: {
@@ -46,7 +46,7 @@ const DIALOGUE_TREES = {
     portrait: "salik",
     speaker: "SÂLİK (SEN)",
     speakerClass: "voice-salik",
-    text: "Gözlerimi açıyorum... Taş halvetgâhın dondurucu serinliği şakaklarıma vuruyor. Odanın derinliklerinde bir kandil tütüyor. Neredeyim ben?",
+    text: "Gözlerimi açıyorum... Taş halvetgâhın dondurucu serinliği şakaklarıma vuruyor. Odanın derinliklerinde kandiller yanıyor. Neredeyim ben?",
     choices: [
       {
         text: "[Nefs-i Emmare] Boğazın kupkuru, karnın aç. Kalk ve seni buraya kimin kilitlediğini bul!",
@@ -57,7 +57,7 @@ const DIALOGUE_TREES = {
         next: "intro_nefs_path"
       },
       {
-        text: "[Akıl-ı Me'âş] Odaya bak: Ortada seccadede oturan pîr [P], sağda demir sandık [S], solda ceviz rahle [R]. Nizam kusursuz.",
+        text: "[Akıl-ı Me'âş] Odaya bak: Ortada Selçuklu halısında oturan Pîr, sağda sedir sandığı, solda ceviz rahle. Nizam kusursuz.",
         portrait: "akil",
         speaker: "Akıl",
         speakerClass: "voice-akil",
@@ -93,7 +93,7 @@ const DIALOGUE_TREES = {
     portrait: "akil",
     speaker: "AKIL-I ME'ÂŞ",
     speakerClass: "voice-akil",
-    text: "Kuzey kemerinin altında Sır Kapısı var. Sandıktaki emanetleri kuşanmadan kapı açılmaz. Adımlarını tartarak at.",
+    text: "Kuzeydeki Selçuklu Taç Kapısı'nın altında Sır Kapısı var. Sandıktaki emanetleri kuşanmadan kapı açılmaz. Adımlarını tartarak at.",
     choices: [
       {
         text: "Nizamı koruyarak etrafa bak.",
@@ -107,7 +107,7 @@ const DIALOGUE_TREES = {
     portrait: "kalp",
     speaker: "KALP-İ SELÎM",
     speakerClass: "voice-kalp",
-    text: "Nefesin sakinleşiyor. Ocağın alevi ve seccadedeki motifler kalbine sükûnet veriyor...",
+    text: "Nefesin sakinleşiyor. Kandillerin alevi ve seccadedeki Selçuklu motifleri kalbine sükûnet veriyor...",
     choices: [
       {
         text: "Sükûnetle doğrul.",
@@ -188,7 +188,7 @@ const DIALOGUE_TREES = {
     portrait: "dervis",
     speaker: "PÎR-İ ŞEYH BURHÂNEDDİN",
     speakerClass: "voice-dervis",
-    text: "Sağdaki sandıkta [S] sana ayrılmış derviş hırkası ve yol asâsı var. Onları kuşanmadan bu kapıdan [K] geçemezsin. Git ve teçhiz ol.",
+    text: "Sağdaki Kadim Sedir Sandığı'nda sana ayrılmış derviş hırkası ve yol asâsı var. Onları kuşanmadan bu Taç Kapı'dan geçemezsin. Git ve teçhiz ol.",
     choices: [
       {
         text: "'Hürmetle efendim, emredersiniz.' [Ayrıl]",
@@ -200,9 +200,9 @@ const DIALOGUE_TREES = {
   // Sandık Etkileşimi (Eşya ve Kıyafet Kazanımı)
   chest_interaction: {
     portrait: "system",
-    speaker: "SANDIK (KİTÂB-I EŞYA)",
+    speaker: "KADİM SEDİR SANDIĞI (KİTÂB-I EŞYA)",
     speakerClass: "voice-system",
-    text: "Demir perçinli sedir sandığın kapağını aralıyorsun. Pirinç kilit parıldıyor. İçinde katlanmış yün bir hırka ve gürgen yol asâsı duruyor.",
+    text: "Demir kuşaklı sedir sandığın kapağını aralıyorsun. Pirinç kilit parıldıyor. İçinde katlanmış yün bir derviş hırkası ve gürgen yol asâsı duruyor.",
     choices: [
       {
         text: "[KUŞAN] Derviş Hırkası'nı giy ve Yol Asâsı'nı eline al.",
@@ -215,6 +215,8 @@ const DIALOGUE_TREES = {
             GAME.wasm.updateStat(2, 1);
             updateStatsUI();
           }
+          updateRoomHeaderUI();
+          renderRoom();
           audio.playItemPickup();
         },
         next: "chest_equipped"
@@ -230,7 +232,7 @@ const DIALOGUE_TREES = {
     portrait: "salik",
     speaker: "SÂLİK",
     speakerClass: "voice-salik",
-    text: "Hırkanın ağır dokusu omuzlarına oturuyor. Asâyı yere vurduğunda çıkan tok ses sana güven veriyor.\n\nKAZANIM: [Yün Derviş Hırkası] kuşanıldı (+1 Kalp).\nKAZANIM: [Gürgen Yol Asâsı] teçhiz edildi (+1 Akıl).",
+    text: "Hırkanın ağır dokusu omuzlarına oturuyor. Gürgen asâyı eline aldığında 32x32 karakter görünümün de yeni hırka ve asân ile güncellendi!\n\nKAZANIM: [Yün Derviş Hırkası] kuşanıldı (+1 Kalp).\nKAZANIM: [Gürgen Yol Asâsı] teçhiz edildi (+1 Akıl).",
     choices: [
       {
         text: "Geri dön.",
@@ -244,7 +246,7 @@ const DIALOGUE_TREES = {
     portrait: "kalp",
     speaker: "KALP-İ SELÎM",
     speakerClass: "voice-kalp",
-    text: "Ceviz rahlede açık duran sahifede altın yaldızla yazılmış şu satırlar ışık saçıyor:\n'Men arefe nefsehû fekad arefe rabbehû' (Nefsini bilen, Rabbini bilir).",
+    text: "İki yanındaki pirinç şamdanların aydınlattığı ceviz rahlede açık duran sahifede altın yaldızla yazılmış şu satırlar parıldıyor:\n'Men arefe nefsehû fekad arefe rabbehû' (Nefsini bilen, Rabbini bilir).",
     choices: [
       {
         text: "[Tefekkür Et] Bir an durup bu manayı içine sindir.",
@@ -269,7 +271,7 @@ const DIALOGUE_TREES = {
     portrait: "ruh",
     speaker: "RUH-I LATÎF",
     speakerClass: "voice-ruh",
-    text: "Zihnin berraklaşıyor. Odanın içindeki kandil dumanları sanki birer harfe dönüşüyor... (+1 Ruh Statı Kazanıldı).",
+    text: "Zihnin berraklaşıyor. Şamdanların ışığı sahifedeki tezhipleri aydınlatıyor... (+1 Ruh Statı Kazanıldı).",
     choices: [
       {
         text: "Rahleden ayrıl.",
@@ -281,9 +283,9 @@ const DIALOGUE_TREES = {
   // Kapı Etkileşimi (Sekans 2'ye Geçiş)
   door_interaction: {
     portrait: "system",
-    speaker: "SIR KAPISI",
+    speaker: "SIR KAPISI (SELÇUKLU TAÇ KAPI)",
     speakerClass: "voice-system",
-    text: "Selçuklu kemerinin altındaki pirinç kakmalı kapı. Ortasında parıldayan bir sır girdabı dönüyor. Burası Makam 2'ye açılan eşiktir.",
+    text: "Burmalı Selçuklu sütunlarının arasındaki anıtsal Taç Kapı. Ortasında parıldayan bir sır mührü duruyor. Burası Makam 2'ye açılan eşiktir.",
     choices: [
       {
         text: "Tokmağı çevir ve Sekans 2'ye adım at.",
@@ -306,7 +308,7 @@ const DIALOGUE_TREES = {
     portrait: "dervis",
     speaker: "PÎR-İ ŞEYH BURHÂNEDDİN",
     speakerClass: "voice-dervis",
-    text: "Dur sâlik! Sandıktan [S] hırkanı ve asânı almadan eşiği geçemezsin. Yol çıplak yürünmez.",
+    text: "Dur sâlik! Sağdaki Kadim Sandık'tan hırkanı ve asânı almadan bu eşiği geçemezsin. Yol çıplak yürünmez.",
     choices: [
       {
         text: "Sandığa yönel.",
@@ -337,14 +339,34 @@ async function initEngine() {
 
 function setupEventListeners() {
   document.getElementById("btn-toggle-music").onclick = () => toggleAudio();
-  const camBtn = document.getElementById("btn-toggle-camera");
-  if (camBtn) camBtn.style.display = "none"; // Clean single straight view
   document.getElementById("btn-menu").onclick = () => {
     audio.playSelect();
     renderMainMenu();
   };
 
   window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("resize", fitViewport);
+}
+
+// Auto-scale 156x56 high-resolution ASCII grid to fit the room viewport box
+function fitViewport() {
+  const box = document.getElementById("room-viewport-box");
+  const vp = document.getElementById("room-viewport");
+  if (!box || !vp || GAME.screen !== "GAMEPLAY") return;
+
+  const cols = GAME.isoRenderer.width;  // 156
+  const rows = GAME.isoRenderer.height; // 56
+  const availW = box.clientWidth - 10;
+  const availH = box.clientHeight - 8;
+
+  if (availW <= 0 || availH <= 0) return;
+
+  const fontByW = availW / (cols * 0.605);
+  const fontByH = availH / (rows * 1.06);
+  const fontSize = Math.max(5.5, Math.min(fontByW, fontByH));
+
+  vp.style.fontSize = `${fontSize.toFixed(2)}px`;
+  vp.style.lineHeight = `${(fontSize * 1.05).toFixed(2)}px`;
 }
 
 function toggleAudio() {
@@ -394,21 +416,21 @@ function handleKeyDown(e) {
       return;
     }
 
-    // Straight 2.5D Movement (Direct and Natural)
+    // High-Res 156x56 Room Movement
     let dx = 0;
     let dy = 0;
 
     if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-      dy = -1;
+      dy = -2;
       GAME.player.direction = "up";
     } else if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-      dy = 1;
+      dy = 2;
       GAME.player.direction = "down";
     } else if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-      dx = -2;
+      dx = -4;
       GAME.player.direction = "left";
     } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-      dx = 2;
+      dx = 4;
       GAME.player.direction = "right";
     } else if (e.key === " " || e.key === "Enter" || e.key === "e" || e.key === "E") {
       checkAdjacentInteractions();
@@ -421,34 +443,37 @@ function handleKeyDown(e) {
   }
 }
 
-// Straight Movement & Solid Collisions
+// High-Res 156x56 Movement & Solid Collisions
 function movePlayer(dx, dy) {
   const newX = GAME.player.x + dx;
   const newY = GAME.player.y + dy;
 
-  // Outer bounds
-  if (newX < 5 || newX > 56 || newY < 8 || newY > 21) {
+  // Room walkable boundaries (156x56 canvas)
+  if (newX < 18 || newX > 138 || newY < 20 || newY > 53) {
     audio.playTone(75, 'square', 0.04, 0.03);
+    if (newY < 20 && newX >= 52 && newX <= 104) {
+      checkAdjacentInteractions();
+    }
     return;
   }
 
-  // Solid Object Collisions (Pîr, Sandık, Rahle)
-  // Pîr on carpet: cols 25..35, rows 11..15
-  if (newX >= 25 && newX <= 35 && newY >= 11 && newY <= 15) {
+  // Solid Object Collisions (Pîr, Rahle, Sandık)
+  // 1. Pîr on central carpet (cols 58..98, foot rows 26..36)
+  if (newX >= 58 && newX <= 98 && newY >= 26 && newY <= 36) {
     audio.playTone(85, 'square', 0.03, 0.03);
     checkAdjacentInteractions();
     return;
   }
 
-  // Rahle on left: cols 4..13, rows 10..15
-  if (newX >= 4 && newX <= 13 && newY >= 10 && newY <= 15) {
+  // 2. Ceviz Rahle on left (cols 8..44, foot rows 32..42)
+  if (newX >= 8 && newX <= 44 && newY >= 32 && newY <= 42) {
     audio.playTone(85, 'square', 0.03, 0.03);
     checkAdjacentInteractions();
     return;
   }
 
-  // Sandık on right: cols 45..58, rows 10..15
-  if (newX >= 45 && newX <= 58 && newY >= 10 && newY <= 15) {
+  // 3. Kadim Sandık on right (cols 110..148, foot rows 31..41)
+  if (newX >= 110 && newX <= 148 && newY >= 31 && newY <= 41) {
     audio.playTone(85, 'square', 0.03, 0.03);
     checkAdjacentInteractions();
     return;
@@ -468,29 +493,29 @@ function checkAdjacentInteractions() {
   const px = GAME.player.x;
   const py = GAME.player.y;
 
-  // Near Pîr (cols 22..38, rows 10..17)
-  if (px >= 22 && px <= 38 && py >= 10 && py <= 17) {
+  // Near Pîr (cols 50..106, rows 22..43)
+  if (px >= 50 && px <= 106 && py >= 22 && py <= 43) {
     audio.playSelect();
     triggerDialogue("pir_conversation");
     return;
   }
 
-  // Near Sandık (cols 42..58, rows 9..17)
-  if (px >= 42 && px <= 58 && py >= 9 && py <= 17) {
+  // Near Sandık (cols 102..150, rows 26..47)
+  if (px >= 102 && px <= 150 && py >= 26 && py <= 47) {
     audio.playSelect();
     triggerDialogue("chest_interaction");
     return;
   }
 
-  // Near Rahle (cols 4..16, rows 9..17)
-  if (px >= 4 && px <= 16 && py >= 9 && py <= 17) {
+  // Near Rahle (cols 6..52, rows 26..47)
+  if (px >= 6 && px <= 52 && py >= 26 && py <= 47) {
     audio.playSelect();
     triggerDialogue("desk_interaction");
     return;
   }
 
-  // Near Sır Kapısı (cols 24..37, rows 8..9)
-  if (px >= 24 && px <= 37 && py <= 9) {
+  // Near Sır Kapısı / Taç Kapı (cols 52..104, rows <= 24)
+  if (px >= 52 && px <= 104 && py <= 24) {
     audio.playSelect();
     triggerDialogue("door_interaction");
     return;
@@ -502,21 +527,21 @@ function checkNearTriggerHint() {
   const py = GAME.player.y;
 
   let nearObj = null;
-  if (px >= 22 && px <= 38 && py >= 10 && py <= 17) {
+  if (px >= 50 && px <= 106 && py >= 22 && py <= 43) {
     nearObj = "Pîr-i Şeyh Burhâneddin";
-  } else if (px >= 42 && px <= 58 && py >= 9 && py <= 17) {
-    nearObj = "Kadim Sandık";
-  } else if (px >= 4 && px <= 16 && py >= 9 && py <= 17) {
-    nearObj = "Ceviz Rahle";
-  } else if (px >= 24 && px <= 37 && py <= 9) {
-    nearObj = "Sır Kapısı";
+  } else if (px >= 102 && px <= 150 && py >= 26 && py <= 47) {
+    nearObj = "Kadim Sedir Sandığı";
+  } else if (px >= 6 && px <= 52 && py >= 26 && py <= 47) {
+    nearObj = "Ceviz Rahle & Mushaf";
+  } else if (px >= 52 && px <= 104 && py <= 24) {
+    nearObj = "Sır Kapısı (Taç Kapı)";
   }
 
   const hintEl = document.getElementById("interaction-hint");
   if (nearObj) {
     hintEl.innerHTML = `> Etkileşim: <span style="color: var(--term-gold); font-weight: bold;">[SPACE / E] ile '${nearObj}' nesnesini incele.</span>`;
   } else {
-    hintEl.innerText = "> Etkileşim: Pîr'e, Sandığa veya Rahleye yaklaşın.";
+    hintEl.innerText = "> Etkileşim: Pîr'e, Sandığa, Rahleye veya Taç Kapı'ya yaklaşın.";
   }
 }
 
@@ -532,8 +557,8 @@ function renderSplashScreen() {
     LOGOS.splash,
     "",
     "┌────────────────────────────────────────────────────────────────────────┐",
-    "│   99 TESBİH: SEFÎNE-İ NÛR - 2.5D SELÇUKLU DERİNLİK MİMARİSİ             │",
-    "│   Düz Perspektif, Detaylı Mekanlar, Disco Elysium Diyalog Paneli       │",
+    "│   99 TESBİH: SEFÎNE-İ NÛR - 32x32 HD ASCII GRAFİK MİMARİSİ            │",
+    "│   156x56 Yüksek Yoğunluklu Sahne, Detaylı Modeller, Disco Elysium      │",
     "└────────────────────────────────────────────────────────────────────────┘",
     "",
     "           >> [ ENTER / HERHANGİ BİR TUŞA BASARAK BAŞLA ] <<"
@@ -556,7 +581,7 @@ function renderLogoScreen() {
     "",
     "┌────────────────────────────────────────────────────────────────────────┐",
     "│ 'Her kim nefsini bilirse, şüphesiz Rabbini de bilir.'                 │",
-    "│  Selçuklu kemerleri, seccade nakışları ve sükûnet dolu iç monologlar.   │",
+    "│  32x32 yoğunluklu karakterler, Selçuklu Taç Kapısı ve iç monologlar.  │",
     "└────────────────────────────────────────────────────────────────────────┘",
     "",
     "             >> [ ENTER / TIKLAYARAK ANA MENÜYE GEÇ ] <<"
@@ -589,8 +614,8 @@ ${LOGOS.mainTitle}
 │   <span class="ascii-menu-item" id="btn-sound">[ 4 ]   8-BİT MÜZİK [AÇIK / KAPALI]                         </span>   │
 │                                                                        │
 ├──[ SİSTEM & MOTOR MALUMATI ]──────────────────────────────────────────┤
-│ Mimari: 2.5D Düz Perspektif Selçuklu Derinlik Motoru (Stabil & Net)   │
-│ Mantık: WebAssembly (AssemblyScript) + Disco Elysium Diyalog Paneli    │
+│ Grafik : 32x32 HD ASCII Model Motoru (156x56 = 8.736 Hücre / Sahne)    │
+│ Mantık : WebAssembly (AssemblyScript) + Disco Elysium Diyalog Paneli   │
 └────────────────────────────────────────────────────────────────────────┘
 </div>
   `;
@@ -608,7 +633,7 @@ function showLoreHelp() {
     "• 1-33. Bölümler (1. Çapraz): Suret ve Sıfat (Temel kıyafetler, hırka, asâ, fiziksel ve nefsani terbiyeler).\n" +
     "• 34-66. Bölümler (2. Çapraz): Gayb ve Kudret (Manevi haritalar, defterler, metafizik güçler).\n" +
     "• 67-99. Bölümler (3. Çapraz): Cem ve Cemiyet (Binit, at, toplumsal ilişkiler, nihai vuslat).\n\n" +
-    "Oda düz ve derinlikli Selçuklu mimarisindedir. Yön tuşlarıyla odada serbestçe yürüyebilirsiniz."
+    "Her model (Sâlik, Pîr, Rahle, Sandık, Taç Kapı) 32x32 piksel eşdeğeri yüksek yoğunluklu ASCII dokularıyla çizilmiştir."
   );
 }
 
@@ -624,16 +649,18 @@ function startNewGame() {
   gameplay.style.display = "flex";
 
   GAME.roomData = ROOMS[1];
+  fitViewport();
   updateRoomHeaderUI();
   updateStatsUI();
   renderRoom();
 
   // İlk Uyanış Diyaloğu
   setTimeout(() => {
+    fitViewport();
     triggerDialogue("intro_awakening");
-  }, 250);
+  }, 150);
 
-  // Calm, atmospheric 750ms Animation Loop (No jitter, gentle breathing)
+  // Calm, atmospheric 750ms Animation Loop
   if (!GAME.animInterval) {
     GAME.animInterval = setInterval(gameLoop, 750);
   }
@@ -650,7 +677,7 @@ function updateRoomHeaderUI() {
   const coords = `(${GAME.player.x}, ${GAME.player.y})`;
   const weapon = GAME.player.equipped.weapon;
   document.getElementById("room-frame-top").innerText = 
-    `┌──[ ${name} (2.5D DERİNLİK) ]──┬──[ KONUM: ${coords} ]──[ TEÇHİZAT: ${weapon} ]──┐`;
+    `┌──[ ${name} (32x32 HD) ]──┬──[ KONUM: ${coords} ]──[ TEÇHİZAT: ${weapon} ]──┐`;
 }
 
 function gameLoop() {
